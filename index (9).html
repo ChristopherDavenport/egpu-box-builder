@@ -1,0 +1,289 @@
+
+
+<!DOCTYPE html>
+<html >
+
+<head>
+  <meta charset="UTF-8">
+  <title>EGPU BOSS</title>
+  
+  
+  
+  <link rel='stylesheet prefetch' href='https://unpkg.com/vuetify/dist/vuetify.min.css'>
+<link rel='stylesheet prefetch' href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons'rel="stylesheet'>
+
+  
+  
+  
+  
+  
+</head>
+
+<body translate="no" >
+
+  <div id="app">
+  <br>
+  <br>
+  <h2> eGPU Box Builder </h2>
+  <br>
+  <hr>
+  <br>
+  <!-- Host Configuration -->
+  <div id="hostCard">
+    <v-layout row wrap >
+      <v-flex xs6 >
+        <v-card class="light-blue lighten-4 elevation-0 ">
+          <v-container fluid>
+            <h5><strong>Host: </strong></h5>
+            <span><strong>Power Delivery: </strong></span>
+            <select v-model="powerDelivery">
+    <option disabled value="">Please select one</option>
+    <option> Thunderbolt 3-powered</option>
+    <option> Dedicated Power </option>
+  </select>
+           
+      <!--      <span v-if="powerDelivery=='Thunderbolt 3-powered'">Warning!</span> -->
+            <br>
+            <span><strong>Operating System: </strong></span>
+            <select v-model="operatingSystem">
+    <option disabled value="">Please select one</option>
+    <option value="macOSSierra16"> macOS Sierra 10.12.6 </option>
+    <option value="win10v1607"> Windows 10 version 1607 </option>
+  </select>
+           
+            </v-card-text>
+          </v-container>
+        </v-card>
+      </v-flex>
+      <v-flex xs5 >
+
+        <v-card class="red lighten-2 elevation-4" v-if="powerDelivery=='Thunderbolt 3-powered'"> 
+        <v-container fluid> 
+          <strong>Warning! </strong>
+          <div> If your host computer has only 1 Thunderbolt 3 port, be sure that your enclosure is able to deliver enough power to keep your laptop charged.  </div>
+          </v-container>
+        </v-card>
+      </v-flex>
+    </v-layout>
+  </div>
+<br>
+  <div id="specsCard">
+    <v-layout row wrap>
+      <v-flex xs6 >
+        <v-card class="light-blue lighten-4 elevation-0">
+          <v-container fluid>
+            <h5><strong>Specifications: </strong></h5>
+
+            <!-- Tooltip a YMMV note for users w/0 16:9 screens -->
+            <span><strong>Monitor Resolution: </strong></span>
+            <select v-model="resolution">
+    <option disabled value="">Please select one</option>
+    <option value='1K'> 1920x1080 </option>
+    <option value='2K'> 2560x1440 </option>
+    <option value='4K'> 3840x2160 </option>
+  </select>
+            <br>
+            <span><strong>CPU: </strong></span>
+            <select v-model="cpu">
+    <option disabled value="">Please select one</option>
+    <option v-for="n in cpuOptions" :value="n">{{ n }}</option>
+  </select>
+            </v-card-text>
+          </v-container>
+        </v-card>
+      </v-flex>
+    </v-layout>
+  </div>
+  <br>
+  <div id="enclosureCard">
+    <v-layout row wrap>
+      <v-flex xs6 >
+        <v-card class="light-blue lighten-4 elevation-0">
+          <v-container fluid>
+            <h5><strong>Enclosure: </strong></h5>
+            <!-- Enclosure onfiguration -->
+            <!-- <span> Does your Enclosure have expansion IO? </span>-->
+            <!-- Tooltip this with the above comment -->
+            <span><strong> Expansion I/O? </strong></span>
+            <select v-model="expansionIO">
+     <option disabled value="">Please select one</option>
+     <option >Yes</option>
+     <option >No</option>
+   </select>
+            <br>
+            <!-- Tooltip explaining adapter choice -->
+            <span><strong> Thunderbolt version: </strong></span>
+            <select v-model="thunderboltGeneration">
+     <option disabled value="">Please select one</option>
+     <option value="32.0">Thunderbolt 3</option>
+     <option value="16.0">Thunderbolt 3>2</option>
+     <option value="10.0">Thunderbolt 3>1</option>
+     <option value="16.0">Thunderbolt 2</option>
+     <option value="10.0">Thunderbolt 1</option>
+   </select>
+            <!-- <span> {{ thunderboltGeneration }}</span> -->
+
+            </v-card-text>
+          </v-container>
+        </v-card>
+      </v-flex>
+    <v-flex xs5 >
+
+        <v-card class="red lighten-2 elevation-4" v-if="expansionIO=='Yes'"> 
+        <v-container fluid> 
+          <strong>Warning! </strong>
+          <div> If your enclosure comes with expansion I/O, such as USB ports, using those ports may reduce the amount of bandwidth available for use by your graphics card. </div>
+          </v-container>
+        </v-card>
+      </v-flex>
+    </v-layout>
+  </div>
+  <br>
+
+ 
+  <!-- Card -->
+  <div id="tableCard">
+    <br>
+
+    <v-layout row wrap>
+      <v-flex xs10 offset-xs1>
+        <v-card dark class="elevation-5">
+          <v-card-title primary-title>
+            <div>
+              <h3 class="headline mb-0">Graphics Cards</h3></div>
+
+          </v-card-title>
+ <!-- Data Table -->
+          <template>
+   <template v-if="resolution == '1K'">
+  <v-data-table
+      v-bind:headers="headers"
+      v-bind:items="items"
+      hide-actions
+      class="elevation-1"
+    >
+    <template slot="headerCell" scope="props">
+      <span v-tooltip:left="{ 'html': props.header.info }">
+        {{ props.header.text }}
+      </span>
+    </template>
+    
+    <template slot="items" scope="props">
+ 
+        <td>{{ props.item.name }}</td>
+        <td class="text-xs-right">{{ props.item.chipset }}</td>
+        <td class="text-xs-right">{{ props.item.price }}</td>
+        <td class="text-xs-right">{{ props.item.fps['1K'].fpsRTR }}</td>
+        <td class="text-xs-right">{{ props.item.fps['1K'].fpsSOM }}</td>
+        <td class="text-xs-right">{{ props.item.fps['1K'].fpsGRW }}</td>
+        <td class="text-xs-right">{{ props.item.power }}</td>
+        <td class="text-xs-right">{{ props.item.support[operatingSystem] }}</td>
+        <td class="text-xs-right">{{ props.item.bottleneck[cpu]}}</td>
+    </template>
+          </v-data-table>
+          </template>
+   <template v-else-if="resolution == '2K' ">
+    <v-data-table
+      v-bind:headers="headers"
+      v-bind:items="items"
+      hide-actions
+      class="elevation-1"
+    >
+    <template slot="headerCell" scope="props">
+      <span v-tooltip:left="{ 'html': props.header.info }">
+        {{ props.header.text }}
+      </span>
+    </template>
+    <template slot="items" scope="props">
+ 
+        <td>{{ props.item.name }}</td>
+        <td class="text-xs-right">{{ props.item.chipset }}</td>
+        <td class="text-xs-right">{{ props.item.price }}</td>
+        <td class="text-xs-right">{{ props.item.fps['2K'].fpsRTR }}</td>
+        <td class="text-xs-right">{{ props.item.fps['2K'].fpsSOM }}</td>
+        <td class="text-xs-right">{{ props.item.fps['2K'].fpsGRW }}</td>
+        <td class="text-xs-right">{{ props.item.power }}</td>
+        <td class="text-xs-right">{{ props.item.support[operatingSystem] }}</td>
+        <td class="text-xs-right">{{ props.item.bottleneck[cpu]}}</td>
+    </template>
+          </v-data-table>
+          </template>
+          <template v-else-if="resolution == '4K' ">
+    <v-data-table
+      v-bind:headers="headers"
+      v-bind:items="items"
+      hide-actions
+      class="elevation-1"
+    >
+    <template slot="headerCell" scope="props">
+      <span v-tooltip:left="{ 'html': props.header.info }">
+        {{ props.header.text }}
+      </span>
+    </template>
+    <template slot="items" scope="props">
+ 
+        <td>{{ props.item.name }}</td>
+        <td class="text-xs-right">{{ props.item.chipset }}</td>
+        <td class="text-xs-right">{{ props.item.price }}</td>
+        <td class="text-xs-right">{{ props.item.fps['4K'].fpsRTR }}</td>
+        <td class="text-xs-right">{{ props.item.fps['4K'].fpsSOM }}</td>
+        <td class="text-xs-right">{{ props.item.fps['4K'].fpsGRW }}</td>
+        <td class="text-xs-right">{{ props.item.power }}</td>
+        <td class="text-xs-right">{{ props.item.support[operatingSystem] }}</td>
+        <td class="text-xs-right">{{ props.item.bottleneck[cpu]}}</td>
+    </template>
+          </v-data-table>
+          </template>
+          <template v-else>
+    <v-data-table
+      v-bind:headers="headers"
+      v-bind:items="items"
+      hide-actions
+      class="elevation-1"
+    >
+    <template slot="headerCell" scope="props">
+      <span v-tooltip:left="{ 'html': props.header.info }">
+        {{ props.header.text }}
+      </span>
+    </template>
+    <template slot="items" scope="props">
+ 
+        <td>{{ props.item.name }}</td>
+        <td class="text-xs-right">{{ props.item.chipset }}</td>
+        <td class="text-xs-right">{{ props.item.price }}</td>
+        <td class="text-xs-right">{{ props.item.fpsSOM }}</td>
+        <td class="text-xs-right">{{ props.item.fpsRTR }}</td>
+        <td class="text-xs-right">{{ props.item.fpsHeaven }}</td>
+        <td class="text-xs-right">{{ props.item.power }}</td>
+        <td class="text-xs-right">{{ props.item.support[operatingSystem] }}</td>
+        <td class="text-xs-right">{{ props.item.bottleneck[cpu]}}</td>
+    </template>
+          </v-data-table>
+          </template>
+          </template>
+        </v-card>
+      </v-flex>
+    </v-layout>
+  </div>
+  <br>
+</div>
+<div id="footer" class="grey darken-4">
+<v-footer class="pa-3">
+    <v-spacer></v-spacer>
+    <p class="white--text text-xs-center">Made with love by Shalomboy Industries in partnership with eGPU.io </p>
+    <p class="white--text text-xs-center">© 2017 Shalomboy Industries</p>
+      
+  </v-footer>
+</div>
+  
+  <script src='https://unpkg.com/vue/dist/vue.js'></script>
+<script src='https://unpkg.com/vuetify/dist/vuetify.min.js'></script>
+
+<script src='./main.js'></script>
+
+  
+  
+
+</body>
+</html>
+ 
